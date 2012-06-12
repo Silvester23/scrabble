@@ -39,7 +39,7 @@ public class Database {
 			mWriter.close();
 			IndexSearcher isearcher = new IndexSearcher(mDir);
 			
-			validWords.addAll(findMatches(letters,"",isearcher, letters.length()));
+			validWords.addAll(findMatches(letters,"",isearcher));
 			
 		} catch (IOException e) {
 			System.out.println("Caught a " + e.getClass() +
@@ -50,17 +50,17 @@ public class Database {
 		
 	}
 	
-	private Set<String> findMatches(String letters, String substring, IndexSearcher isearcher, int maxLength) {
+	private Set<String> findMatches(String letters, String substring, IndexSearcher isearcher) {
 		HashSet<String> validWords = new HashSet<String>();
 		int n = letters.length();
 		for(int i = 0; i < n; i++) {
-			String contdQuery = "\n"+substring+letters.charAt(i)+"*";
-			String finQuery = "\n"+substring+letters.charAt(i);
-			if(doQuery(finQuery,isearcher)) {
+			String finalQuery = substring+letters.charAt(i);
+			String contdQuery = finalQuery+"*";
+			if(doQuery(finalQuery,isearcher)) {
 				validWords.add(substring + letters.charAt(i));
 			}
 			if(doQuery(contdQuery,isearcher)) {
-				validWords.addAll(findMatches(letters.substring(0,i) + letters.substring(i+1,n), substring+letters.charAt(i) ,isearcher, maxLength));
+				validWords.addAll(findMatches(letters.substring(0,i) + letters.substring(i+1,n), substring+letters.charAt(i) ,isearcher));
 			}
 		}		
 		return validWords;
