@@ -8,11 +8,13 @@ public class Solver {
 	
 	public static void main(String[] args) {
 
-		String letters = "STYXWEN";
+		String letters = "STYXWE?";
 		
 		Database db = new Database();
 		Set<String> matches = db.findMatches(letters);
-		System.out.println(matches.toString());
+		//System.out.println(matches.toString());
+		Board board = new Board();
+		System.out.println(board.toString());
 	
 	}
 	
