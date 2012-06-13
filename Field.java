@@ -1,35 +1,35 @@
 package de.mainaim.scrabblesolver;
 
 public class Field {
-	private String mValue;
+	private Tile mTile;
 	private FieldType mType;
 	
 	public Field() {
-		mValue = "";
 		mType = FieldType.STANDARD;
+		mTile = new Tile();
 	}
 	
-	public Field(String value) {
-		mValue = value;
+	public Field(Tile tile) {
+		mTile = tile;
 		mType = FieldType.STANDARD;
 	}
 	
 	public Field(FieldType type) {
 		mType = type;
-		mValue = "";
+		mTile = new Tile();
 	}
 	
-	public Field(String value, FieldType type) {
-		mValue = value;
+	public Field(Tile tile, FieldType type) {
+		mTile = tile;
 		mType = type;
 	}
 
-	public String getValue() {
-		return mValue;
+	public Tile getTile() {
+		return mTile;
 	}
 
-	public void setValue(String value) {
-		mValue = value;
+	public void setTile(Tile tile) {
+		mTile = tile;
 	}
 
 	public FieldType getType() {
@@ -63,7 +63,7 @@ public class Field {
 				output += "X";
 				break;
 		}
-		output += ","+mValue+")";	
+		output += ","+ mTile.mChar +")";	
 		
 		
 		return output;
