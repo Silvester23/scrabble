@@ -2,9 +2,11 @@ package de.mainaim.scrabblesolver;
 
 public class Board {
 	private Field[][] mBoard;
+	public int size = 15;
+	private boolean mEmpty = true;
 	
 	public Board() {
-		mBoard = new Field[15][15];
+		mBoard = new Field[size][size];
 		for(int row = 0; row < mBoard.length; row++) {
 			for(int col = 0; col < mBoard[row].length; col++) {
 				if(row == 7 && col == 7) {
@@ -30,6 +32,23 @@ public class Board {
 				}
 			}
 		}
+	}
+	
+	public void setTile(int row, int col, Tile tile) {
+		if(mBoard[row][col].getTile() == null) {
+			mBoard[row][col].setTile(tile);
+			if(mEmpty == true) {
+				mEmpty = false;
+			}
+		} 
+	}
+	
+	public boolean isEmpty() {
+		return mEmpty;
+	}
+	
+	public Field getField(int row, int col) {
+		return mBoard[row][col];
 	}
 	
 	@Override

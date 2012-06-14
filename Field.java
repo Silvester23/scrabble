@@ -6,7 +6,11 @@ public class Field {
 	
 	public Field() {
 		mType = FieldType.STANDARD;
-		mTile = new Tile();
+	}
+	
+	public Field(Field field) {
+		mTile = field.getTile();
+		mType = field.getType();
 	}
 	
 	public Field(Tile tile) {
@@ -16,7 +20,6 @@ public class Field {
 	
 	public Field(FieldType type) {
 		mType = type;
-		mTile = new Tile();
 	}
 	
 	public Field(Tile tile, FieldType type) {
@@ -31,13 +34,13 @@ public class Field {
 	public void setTile(Tile tile) {
 		mTile = tile;
 	}
+	
+	public void setTile(char character) {
+		mTile = new Tile(character);
+	}
 
 	public FieldType getType() {
 		return mType;
-	}
-
-	public void setType(FieldType type) {
-		mType = type;
 	}
 	
 	@Override
@@ -63,7 +66,13 @@ public class Field {
 				output += "X";
 				break;
 		}
-		output += ","+ mTile.mChar +")";	
+		output += ",";
+		if(mTile != null) {
+			output += Character.toUpperCase(mTile.mChar);
+		} else {
+			output += " ";
+		}
+		output += ")";	
 		
 		
 		return output;

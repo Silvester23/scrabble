@@ -1,13 +1,8 @@
 package de.mainaim.scrabblesolver;
 
 public class Tile {
-	private int mValue;
+	public int mValue;
 	public char mChar;
-	
-	public Tile() {
-		mChar = ' ';
-		mValue = 0;
-	}
 	
 	public Tile(char character) {
 		mChar = Character.toLowerCase(character);
