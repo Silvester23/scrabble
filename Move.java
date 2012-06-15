@@ -1,6 +1,6 @@
 package de.mainaim.scrabblesolver;
 
-public class Move {
+public class Move implements Comparable<Move> {
 	private boolean mHorizontal;
 	private int mRow;
 	private int mCol;
@@ -30,9 +30,7 @@ public class Move {
 	
 	public int getPoints() {
 		return mPoints;
-	}
-	
-	
+	}	
 	
 	private int calcPoints() {
 		int points = 0;
@@ -61,6 +59,33 @@ public class Move {
 		}
 		points *= wordmultiplier;
 		return points;
+	}
+	
+	@Override
+	public String toString() {
+		String output = "{";
+		output += "Word: " + mLetters + ", ";
+		output += "Row: " + mRow + ", ";
+		output += "Col: " + mCol + ", ";
+		if(mHorizontal) {
+			output += "Dir: Hor, ";
+		} else {
+			output += "Dir: Ver, ";
+		}
+		output += "Points : " + mPoints + "}";
+		
+		return output;
+	}
+
+	@Override
+	public int compareTo(Move move) {
+		if(move.getPoints() > mPoints) {
+			return 1;
+		} else if(move.getPoints() < mPoints) {
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 	
 }

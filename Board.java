@@ -2,11 +2,11 @@ package de.mainaim.scrabblesolver;
 
 public class Board {
 	private Field[][] mBoard;
-	public int size = 15;
+	private int mSize = 15;
 	private boolean mEmpty = true;
 	
 	public Board() {
-		mBoard = new Field[size][size];
+		mBoard = new Field[mSize][mSize];
 		for(int row = 0; row < mBoard.length; row++) {
 			for(int col = 0; col < mBoard[row].length; col++) {
 				if(row == 7 && col == 7) {
@@ -25,8 +25,7 @@ public class Board {
 						 ||(col == 7 && (row % 4 == 3))) {
 					mBoard[row][col] = new Field(FieldType.DOUBLECHAR);
 				}
-				
-				
+
 				else {
 					mBoard[row][col] = new Field();
 				}
@@ -43,17 +42,37 @@ public class Board {
 		} 
 	}
 	
+	public void setTile(int row, int col, char character) {
+		if(mBoard[row][col].getTile() == null) {
+			mBoard[row][col].setTile(character);
+			if(mEmpty == true) {
+				mEmpty = false;
+			}
+		} 
+	}
+	
 	public boolean isEmpty() {
 		return mEmpty;
 	}
 	
 	public Field getField(int row, int col) {
+		if(row < 0 || col < 0 || row >= mSize || col >= mSize) {
+			return null;
+		}
 		return mBoard[row][col];
+	}
+	
+	public int getSize() {
+		return mSize;
 	}
 	
 	@Override
 	public String toString() {
-		String output = "";
+		String output = "   Col No.:  ";
+		for(int col = 0; col < mBoard.length; col++) {
+			output += String.format(" %02d  ",col);
+		}
+		output += "\n";
 		for(int row = 0; row < mBoard.length; row++) {
 			output += String.format("Row No. %02d: [",row);
 			for(int col = 0; col < mBoard[row].length; col++) {

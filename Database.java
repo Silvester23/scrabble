@@ -28,30 +28,31 @@ public class Database {
 	private Directory mDir = new RAMDirectory();
 	private Document mDoc = createDocument();
 	private QueryParser mParser = new QueryParser(Version.LUCENE_36, "word", mAnalyzer);
+	private IndexSearcher mISearcher;
 	public int mTries = 0;
 	//private static Set<String> mValidWords = new HashSet<String>();
 	
-	
-	public Set<String> findWords(String letters) {
-		
-		letters = letters.toLowerCase();
-		HashSet<String> validWords = new HashSet<String>();
-		
+	public Database() {
 		try {
 			IndexWriter mWriter = new IndexWriter(mDir, mIwc);
 			mWriter.addDocument(mDoc);
 			mWriter.close();
-			IndexSearcher isearcher = new IndexSearcher(mDir);
-			
-			long starttime = System.nanoTime();
-			validWords.addAll(findWords(letters,"",isearcher));
-			System.out.println("Total search time: " + Long.toString((System.nanoTime() - starttime)/1000000));
-			System.out.println("Matches: " + Integer.toString(validWords.size()));
-			System.out.println("Tries: " + Integer.toString(mTries));
+			mISearcher = new IndexSearcher(mDir);
 		} catch (IOException e) {
 			System.out.println("Caught a " + e.getClass() +
 				       "\n with message: " + e.getMessage());
 		}
+	}
+	
+	
+	public Set<String> findWords(String letters) {
+		letters = letters.toLowerCase();
+		HashSet<String> validWords = new HashSet<String>();	
+		long starttime = System.nanoTime();
+		validWords.addAll(findWords(letters,"",mISearcher));
+		System.out.println("Total search time: " + Long.toString((System.nanoTime() - starttime)/1000000));
+		System.out.println("Matches: " + Integer.toString(validWords.size()));
+		System.out.println("Tries: " + Integer.toString(mTries));
 		mTries = 0;
 		return validWords;
 		
@@ -122,6 +123,8 @@ public class Database {
 		return doc;
 	}
 	
+	
+	// Unsuccessful attempt at getting wildcard-matches
 	/*
 	public Set<String> getWords(String queryString, IndexSearcher isearcher) {
 		
