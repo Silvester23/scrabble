@@ -64,10 +64,10 @@ public class Database {
 		for(int i = 0; i < n; i++) {
 			String finalQuery = substring+letters.charAt(i);
 			String contdQuery = finalQuery+"*";
-			if(doQuery(finalQuery,isearcher)) {
+			if(doQuery(finalQuery)) {
 				validWords.add(substring + letters.charAt(i));
 			}
-			if(doQuery(contdQuery,isearcher)) {
+			if(doQuery(contdQuery)) {
 				validWords.addAll(findWords(letters.substring(0,i) + letters.substring(i+1,n), substring+letters.charAt(i) ,isearcher));
 			}
 		}		
@@ -76,7 +76,7 @@ public class Database {
 	}
 	
 	
-	public boolean doQuery(String queryString, IndexSearcher isearcher) {
+	public boolean doQuery(String queryString) {
 		mTries += 1;
 		
 		/* Debug Query
@@ -98,7 +98,7 @@ public class Database {
 		//Reenable after Debugging
 		try {
 			Query query = mParser.parse(queryString);
-			return isearcher.search(query,100).totalHits > 0;
+			return mISearcher.search(query,100).totalHits > 0;
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getMessage());
 			return false;
