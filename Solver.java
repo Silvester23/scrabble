@@ -27,6 +27,11 @@ public class Solver {
 		board.setTile(7,9,'n');
 		board.setTile(7,8,'o');
 		board.setTile(7,7,'f');
+		
+		board.setTile(6,7,'e');
+		board.setTile(5,7,'h');
+		board.setTile(4,7,'c');
+		
 		board.setTile(7,6,'e');
 		board.setTile(7,5,'l');
 		board.setTile(7,4,'e');
@@ -38,13 +43,13 @@ public class Solver {
 		board.setTile(9,5,'o');
 		
 		
-		Move move = new Move(" allo",5,5,true,board);
+		//Move move = new Move("h lo",6,4,false,board);
 		
-		/*
+		
 		starttime = System.nanoTime();
 		findMoves(db, board, letters);
 		System.out.println("Finding Moves: " + Long.toString((System.nanoTime() - starttime)/100000));
-		*/
+		
 		System.out.println(board.toString());
 		
 	}

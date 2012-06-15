@@ -29,7 +29,7 @@ public class Word implements Comparable<Word> {
 			mFields[i] = new Field(board.getField(curRow,curCol));
 			if(board.getField(curRow,curCol).getTile() == null) {
 					mFields[i].setTile(mLetters.charAt(i));
-			}
+			} 
 		}
 		mPoints = calcPoints();
 	}

@@ -43,6 +43,10 @@ public class Field {
 		return mType;
 	}
 	
+	public void setType(FieldType type) {
+		mType = type;
+	}
+	
 	@Override
 	public String toString() {
 		String output = "(";
