@@ -13,7 +13,7 @@ public class Solver {
 	public static void main(String[] args) {
 		long starttime;
 
-		String letters = "sexyten";
+		String letters = "ybxrune";
 		
 		starttime = System.nanoTime();
 		Database db = new Database();
@@ -24,27 +24,22 @@ public class Solver {
 		
 		
 		
-		board.setTile(7,9,'n');
-		board.setTile(7,8,'o');
-		board.setTile(7,7,'f');
+		board.setTile(5,5,'k');
+		board.setTile(6,5,'e');
+		board.setTile(7,5,'i');
+		board.setTile(8,5,'n');
+
 		
-		board.setTile(6,7,'e');
-		board.setTile(5,7,'h');
-		board.setTile(4,7,'c');
+		/*
+		board.setTile(8,8,'d');
 		
-		board.setTile(7,6,'e');
-		board.setTile(7,5,'l');
-		board.setTile(7,4,'e');
-		board.setTile(7,3,'t');
-		
-		board.setTile(5,5,'h');
-		board.setTile(6,5,'a');
-		board.setTile(8,5,'l');
-		board.setTile(9,5,'o');
+		board.setTile(8,9,'s');
+		board.setTile(9,9,'o');
+		*/
 		
 		
-		//Move move = new Move("h lo",6,4,false,board);
-		
+		//Move move = new Move("s",10,5,true,board);
+		//[{Word: n, Row: 8, Col: 7, Dir: Hor, Points : 1}, {Word: chefn, Row: 4, Col: 7, Dir: Ver, Points : 12}]
 		
 		starttime = System.nanoTime();
 		findMoves(db, board, letters);
@@ -52,14 +47,20 @@ public class Solver {
 		
 		System.out.println(board.toString());
 		
+		ArrayList<Move> test = new ArrayList<Move>();
+		test.add(null);
+		test.remove(null);
+		System.out.println(test);
+		
 	}
 	
 	
 	public static void findMoves(Database db, Board board, String letters) {
-		ArrayList<Word> moves = new ArrayList<Word>();
+		ArrayList<Move> moves = new ArrayList<Move>();
 		
 		// Behaviour for empty Board
 		if(board.isEmpty()) {
+			/*
 			Set<String> matches = db.findWords(letters);
 			System.out.println(matches);
 			String[] matchArray = matches.toArray(new String[0]);
@@ -73,6 +74,7 @@ public class Solver {
 			}
 			Collections.sort(moves);
 			System.out.println(moves.toString());
+			*/
 		}
 		
 		// Behaviour for non-empty Board
@@ -100,104 +102,82 @@ public class Solver {
 				}
 			}
 			
-			ArrayList<Word> movesAtPosition = new ArrayList<Word>();
+			ArrayList<Move> movesAtPosition = new ArrayList<Move>();
 			Iterator<int[]> ite = indices.iterator();
 			while(ite.hasNext()) {
 				int[] curPosition = ite.next();
-				movesAtPosition = getMovesAtPosition(db, curPosition, board, letters);
+				movesAtPosition = getMovesAtPosition(letters,curPosition, board, db);
+				moves.addAll(movesAtPosition);
 			}
-			System.out.println(movesAtPosition);
+			Collections.sort(moves);
+			System.out.println(moves);
 		}
 		
 		
 	}
 	
 
-	public static ArrayList<Word> getMovesAtPosition(Database db, int[] position, Board board, String letters) {
+	public static ArrayList<Move> getMovesAtPosition(String letters, int[] position, Board board, Database db) {
 		int row = position[0];
 		int col = position[1];
-		ArrayList<Word> moves = new ArrayList<Word>();
-		for(int i = 0; i < letters.length(); i++) {
-			char newChar = letters.charAt(i);
-			
-			
-			// Set-Direction: Up
-			if(row > 0 && row < board.getSize() -1) {
-				// Adjacent lower tile?
-				if(board.getField(row+1,col).getTile() != null) {
-					// Get current lower word
-					String curWord = "";
-					curWord += newChar;
-					int j = 1;
-					Field nextVert = board.getField(row+j,col);
-					while(nextVert != null && nextVert.getTile() != null) {
-						j++;
-						curWord += nextVert.getTile().mChar;
-						nextVert = board.getField(row+j,col);
+		ArrayList<Move> moves = new ArrayList<Move>();
+		
+		moves.addAll(getMovesAtPosition(letters, "", position, true, false, board, db));
+		moves.addAll(getMovesAtPosition(letters, "", position, false, false, board, db));
+		
+		Collections.sort(moves);
+		return moves;
+	}
+	
+	public static ArrayList<Move> getMovesAtPosition(String letters, String substring, int[] position, boolean horizontal, boolean reverse, Board board, Database db) {
+		int row = position[0];
+		int col = position[1];
+		ArrayList<Move> moves = new ArrayList<Move>();
+		int n = letters.length();
+		
+		if(horizontal) {
+			for(int i = 0; i < n; i++) {
+				String newLetters = substring + letters.charAt(i);
+				
+				
+				if(db.doQuery(newLetters + "*")) {
+					Move move = new Move(newLetters,row,col,horizontal,board);
+					
+					if(move.isValid(db)) {
+						moves.add(move);
 					}
-					String finalQuery = curWord;
-					String contdQuery = curWord + "*";
+					newLetters = addSpacesToSubstring(newLetters, position, horizontal, reverse, board);
+									
 					
-					//If placing the new char is valid vertically, check for horizontal neighbours
-					if(db.doQuery(finalQuery)) {
-						Word verMove = new Word(curWord,row,col,false,board);
-						String horWord = "";
-						Field prevHor;
-						j = 1;
-						while((prevHor = board.getField(row,col-j)) != null) {
-							if(prevHor.getTile() == null)
-								break;
-							horWord = prevHor.getTile().mChar + horWord;
-							j++;
-						}
-						horWord += newChar;
-						
-						Field nextHor;
-						j = 1;
-						while((nextHor = board.getField(row,col+j)) != null) {
-							if(nextHor.getTile() == null)
-								break;
-							horWord += nextHor.getTile().mChar;
-							j++;
-						}
-						if(horWord.length() > 1) {
-							System.out.println();
-							System.out.println("Hier neu in " + row + ", " + col);
-							System.out.println("\""+horWord+"\"");
-							System.out.println();
-							if(db.doQuery(horWord)) {
-								Word horMove = new Word(horWord,row,col,true,board);
-								System.out.println(horMove);
-								System.out.println(verMove);
-							}
-						} else {
-							System.out.println(verMove);
-							// The new character has no horizontal neighbours => placing the char is valid
-						}
-					}
-					
-					if(db.doQuery(contdQuery)) {
-						System.out.println(curWord);
-						System.out.println("" + row + "," + col);
-					}
-						
-						
-
-				}
-			}
-			
-			if(i > 0) {
-				if(board.getField(row-1,col).getTile() != null) {
-					
-				}
-				if(board.getField(row,col-1).getTile() != null) {
-					
-				}
+					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), newLetters, position, horizontal, reverse, board, db));
+				}				
 				
 			}
 		}
 		
-		
 		return moves;
+	}
+	
+	
+	public static String addSpacesToSubstring(String substring, int[] position, boolean horizontal, boolean reverse, Board board) {
+		int row = position[0];
+		int col = position[1];
+		int n = substring.length();
+		if(horizontal) {
+			if(col < board.getSize() -1) {
+				// Add spaces for tiles after substring
+				Field nextHor;
+				int i = 0;
+				while((nextHor = board.getField(row,col + n +i)) != null) {
+					Tile nextTile = nextHor.getTile();
+					if(nextTile == null)
+						break;
+					i++;
+					substring += " "; 
+				}
+			}
+		}
+		
+		return substring;
 	}
 }

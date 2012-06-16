@@ -5,7 +5,7 @@ public class Word implements Comparable<Word> {
 	private int mRow;
 	private int mCol;
 	private String mLetters;
-	private int mPoints;	
+	private int mPoints = -1;	
 	private Field[] mFields;
 	private boolean mValid;
 	private boolean mValidCheck = false;
@@ -25,16 +25,20 @@ public class Word implements Comparable<Word> {
 			} else {
 				curRow += i;
 			}
-			
 			mFields[i] = new Field(board.getField(curRow,curCol));
 			if(board.getField(curRow,curCol).getTile() == null) {
 					mFields[i].setTile(mLetters.charAt(i));
 			} 
 		}
-		mPoints = calcPoints();
 	}
 	
 	public int getPoints() {
+		if(mPoints != -1) {
+			return mPoints;
+		}
+		
+		
+		mPoints = calcPoints();
 		return mPoints;
 	}
 	
@@ -85,16 +89,16 @@ public class Word implements Comparable<Word> {
 		} else {
 			output += "Dir: Ver, ";
 		}
-		output += "Points : " + mPoints + "}";
+		output += "Points : " + getPoints() + "}";
 		
 		return output;
 	}
 
 	@Override
 	public int compareTo(Word move) {
-		if(move.getPoints() > mPoints) {
+		if(move.getPoints() > getPoints()) {
 			return 1;
-		} else if(move.getPoints() < mPoints) {
+		} else if(move.getPoints() < getPoints()) {
 			return -1;
 		} else {
 			return 0;

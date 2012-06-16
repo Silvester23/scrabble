@@ -51,6 +51,11 @@ public class Board {
 	public void setTile(int row, int col, char character) {
 		if(mBoard[row][col].getTile() == null) {
 			mBoard[row][col].setTile(character);
+			
+			
+			// Multipliers can only be used once
+			mBoard[row][col].setType(FieldType.STANDARD);
+			
 			if(mEmpty == true) {
 				mEmpty = false;
 			}

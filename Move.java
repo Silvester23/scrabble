@@ -1,17 +1,20 @@
 package de.mainaim.scrabblesolver;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
-public class Move {
+public class Move implements Comparable<Move> {
 	private ArrayList<Word> mWords = new ArrayList<Word>();
-	private int mPoints;
+	private int mPoints = -1;
 	private boolean mValid;
+	private boolean mValidCheck;
 	private int mRow;
 	private int mCol;
 	private String mLetters;
 	private Board mBoard;
 	private boolean mHorizontal;
+	
 	
 	
 	public Move(String letters, int row, int col, boolean horizontal, Board board) {
@@ -20,35 +23,73 @@ public class Move {
 		mLetters = letters;
 		mBoard = board;
 		mHorizontal = horizontal;
-		//mWords.add(new Word(letters,row,col,horizontal,board));
 		
 		// Get main word
 		String wordstring = getFullWord(letters,row,col,horizontal);
-		mWords.add(new Word(wordstring,row,col,horizontal,board));
-		
+		if(wordstring.length() > 1) {
+			mWords.add(new Word(wordstring,mRow,mCol,horizontal,board));
+			
+			// Reset positions
+			mRow = row;
+			mCol = col;
+		}
 		for(int i = 0; i < letters.length(); i++) {
 			if(letters.charAt(i) != ' ') {
 				if(horizontal) {
 					// Check for vertical neighbours
 					if(board.getField(row+1,col+i).getTile() != null || board.getField(row-1,col+i).getTile() != null) {
 						String vertWord  = getFullWord(Character.toString(letters.charAt(i)),row,col+i,false);
-						mWords.add(new Word(vertWord,row,col+i,false,board));
+						if(vertWord.length() > 1) {
+							mWords.add(new Word(vertWord,mRow,mCol+i,false,board));
+						}
 					}
 				} else {
 					//Check for horizontal neighbours
 					if(board.getField(row+i,col+1).getTile() != null || board.getField(row+i,col-1).getTile() != null) {
 						String horWord  = getFullWord(Character.toString(letters.charAt(i)),row+i,col,true);
-						mWords.add(new Word(horWord,row+i,col,true,board));
+						if(horWord.length() > 1) {
+							mWords.add(new Word(horWord,mRow+i,mCol,true,board));
+						}
 					}
 				}
 			}
 		}
-		
-		System.out.println(mWords);
 	}
 	
+	public int getPoints() {
+		if(mPoints != -1) {
+			return mPoints;
+		}
+		mPoints = 0;
+		Iterator<Word> iter = mWords.iterator();
+		while(iter.hasNext()) {
+			Word word = iter.next();
+			mPoints += word.getPoints();
+		}		
+		
+		return mPoints;
+	}
 	
-	public String getFullWord(String letters, int row, int col, boolean horizontal) {
+	public boolean isValid(Database db) {
+		
+		if(mValidCheck == true) {				
+			return mValid;
+		}
+		
+		mValid = true;
+		
+		Iterator<Word> iter = mWords.iterator();
+		while(iter.hasNext()) {
+			Word word = iter.next();
+			if(word.isValid(db) == false) {
+				mValid = false;
+			}
+		}	
+		
+		return mValid;
+	}
+	
+	private String getFullWord(String letters, int row, int col, boolean horizontal) {
 		String word = "";
 		
 		if(horizontal) {
@@ -63,7 +104,10 @@ public class Move {
 						break;
 					
 					i++;
-					word = prevTile.mChar + word; 
+					word = prevTile.mChar + word;
+					
+					//Adjust horizontal starting position for move
+					mCol--;
 				}
 			}
 			
@@ -71,7 +115,6 @@ public class Move {
 			
 			for(int i = 0; i < letters.length(); i++) {
 				if(letters.charAt(i) == ' ') {
-					System.out.println("Leerzeichen bei " + i);
 					letters = letters.substring(0,i) + mBoard.getField(row,col+i).getTile().mChar + letters.substring(i+1,letters.length());
 				}
 			}
@@ -104,7 +147,10 @@ public class Move {
 						break;
 					
 					i++;
-					word = prevTile.mChar + word; 
+					word = prevTile.mChar + word;
+					
+					//Adjust vertical starting position for move
+					mRow--;
 				}	
 			}
 			
@@ -112,7 +158,6 @@ public class Move {
 			
 			for(int i = 0; i < letters.length(); i++) {
 				if(letters.charAt(i) == ' ') {
-					System.out.println("Leerzeichen bei " + i);
 					letters = letters.substring(0,i) + mBoard.getField(row+i,col).getTile().mChar + letters.substring(i+1,letters.length());
 				}
 			}
@@ -136,5 +181,25 @@ public class Move {
 		}
 		
 		return word;
+	}
+	
+	@Override
+	public String toString() {
+		String output = "[";
+		output += "Points : " + getPoints() + ", ";
+		output += "Words: " + mWords.toString() + "]";
+		
+		return output;
+	}
+
+	@Override
+	public int compareTo(Move move) {
+		if(move.getPoints() > getPoints()) {
+			return 1;
+		} else if(move.getPoints() < getPoints()) {
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 }
