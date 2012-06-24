@@ -63,19 +63,7 @@ public class Solver {
 		// Behaviour for empty Board
 		if(mBoard.isEmpty()) {
 			/*
-			Set<String> matches = db.findWords(letters);
-			System.out.println(matches);
-			String[] matchArray = matches.toArray(new String[0]);
-			for(int i = 0; i < matchArray.length; i++) {
-				String word = matchArray[i];				
-				for(int j = 0; j < word.length(); j++) {
-					moves.add(new Word(matchArray[i],7,7-j,true,board));
-					moves.add(new Word(matchArray[i],7-j,7,false,board));
-				}
-				
-			}
-			Collections.sort(moves);
-			System.out.println(moves.toString());
+			 * TODO
 			*/
 		}
 		
