@@ -8,6 +8,11 @@ public class Field {
 		mType = FieldType.STANDARD;
 	}
 	
+	public Field(char character) {
+		mTile = new Tile(character);
+		mType = FieldType.STANDARD;
+	}
+	
 	public Field(Field field) {
 		mTile = field.getTile();
 		mType = field.getType();

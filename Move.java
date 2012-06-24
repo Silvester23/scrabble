@@ -3,8 +3,11 @@ package de.mainaim.scrabblesolver;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class Move implements Comparable<Move> {
+
+public final class Move implements Comparable<Move> {
 	private ArrayList<Word> mWords = new ArrayList<Word>();
 	private int mPoints = -1;
 	private boolean mValid;
@@ -23,32 +26,37 @@ public class Move implements Comparable<Move> {
 		mLetters = letters;
 		mBoard = board;
 		mHorizontal = horizontal;
+		String newLetters = "";
+		
 		
 		// Get main word
-		String wordstring = getFullWord(letters,row,col,horizontal);
+		Word mainWord = board.getFullWord(letters,row,col,horizontal);
+		String wordstring = mainWord.getLetters();
 		if(wordstring.length() > 1) {
-			mWords.add(new Word(wordstring,mRow,mCol,horizontal,board));
-			
-			// Reset positions
-			mRow = row;
-			mCol = col;
+			mWords.add(mainWord);
 		}
 		for(int i = 0; i < letters.length(); i++) {
 			if(letters.charAt(i) != ' ') {
 				if(horizontal) {
-					// Check for vertical neighbours
-					if(board.getField(row+1,col+i).getTile() != null || board.getField(row-1,col+i).getTile() != null) {
-						String vertWord  = getFullWord(Character.toString(letters.charAt(i)),row,col+i,false);
-						if(vertWord.length() > 1) {
-							mWords.add(new Word(vertWord,mRow,mCol+i,false,board));
+					if(board.getField(row,col+i).getTile() != null) {
+						continue;
+					}
+					// Check for vertical neighbours if field is empty
+					if((board.getField(row+1,col+i) != null && board.getField(row+1,col+i).getTile() != null) || (board.getField(row-1,col+i) != null && board.getField(row-1,col+i).getTile() != null)) {
+						Word vertWord = board.getFullWord(Character.toString(letters.charAt(i)),row,col+i,false);
+						if(vertWord.getLetters().length() > 1) {
+							mWords.add(vertWord);
 						}
 					}
 				} else {
+					if(board.getField(row+i,col).getTile() != null) {
+						continue;
+					}
 					//Check for horizontal neighbours
-					if(board.getField(row+i,col+1).getTile() != null || board.getField(row+i,col-1).getTile() != null) {
-						String horWord  = getFullWord(Character.toString(letters.charAt(i)),row+i,col,true);
-						if(horWord.length() > 1) {
-							mWords.add(new Word(horWord,mRow+i,mCol,true,board));
+					if((board.getField(row+i,col+1) != null && board.getField(row+i,col+1).getTile() != null) || (board.getField(row+i,col-1) != null && board.getField(row+i,col-1).getTile() != null)) {
+						Word horWord  = board.getFullWord(Character.toString(letters.charAt(i)),row+i,col,true);
+						if(horWord.getLetters().length() > 1) {
+							mWords.add(horWord);
 						}
 					}
 				}
@@ -70,22 +78,43 @@ public class Move implements Comparable<Move> {
 		return mPoints;
 	}
 	
+	public int getRow() {
+		return mRow;
+	}
+	
+	public int getCol() {
+		return mCol;
+	}
+	
+	public String getLetters() {
+		return mLetters;
+	}
+	
+	public ArrayList<Word> getWords() {
+		return mWords;
+	}
+	
+	
 	public boolean isValid(Database db) {
 		
 		if(mValidCheck == true) {				
 			return mValid;
 		}
 		
-		mValid = true;
+
 		
-		Iterator<Word> iter = mWords.iterator();
-		while(iter.hasNext()) {
-			Word word = iter.next();
-			if(word.isValid(db) == false) {
-				mValid = false;
+		if(mWords.size() > 0) {
+			mValid = true;
+			Iterator<Word> iter = mWords.iterator();
+			while(iter.hasNext()) {
+				Word word = iter.next();				
+				if(word.isValid(db) == false) {
+					mValid = false;
+				}
 			}
-		}	
+		} 
 		
+		mValidCheck = true;
 		return mValid;
 	}
 	
@@ -112,14 +141,7 @@ public class Move implements Comparable<Move> {
 			}
 			
 			// Get letters between new letters
-			
-			for(int i = 0; i < letters.length(); i++) {
-				if(letters.charAt(i) == ' ') {
-					letters = letters.substring(0,i) + mBoard.getField(row,col+i).getTile().mChar + letters.substring(i+1,letters.length());
-				}
-			}
-				
-			word += letters;
+			word += mBoard.fillGaps(letters, row, col, horizontal);
 			
 			if(col + letters.length() < mBoard.getSize() -1) {
 				// Get all letters after new letters
@@ -155,14 +177,11 @@ public class Move implements Comparable<Move> {
 			}
 			
 			// Get letters between new letters
-			
-			for(int i = 0; i < letters.length(); i++) {
-				if(letters.charAt(i) == ' ') {
-					letters = letters.substring(0,i) + mBoard.getField(row+i,col).getTile().mChar + letters.substring(i+1,letters.length());
-				}
+			try {
+				word += mBoard.fillGaps(letters, row, col, horizontal);
+			} catch(NullPointerException npe) {
+				System.out.println("Caught NPE with '" + letters + "' at " + row + ", " + col + ". Horizontal: " + horizontal);
 			}
-							
-			word += letters;
 						
 			if(row + letters.length() < mBoard.getSize() -1) {
 				// Get all letters after new letters
@@ -183,10 +202,14 @@ public class Move implements Comparable<Move> {
 		return word;
 	}
 	
+	
 	@Override
 	public String toString() {
 		String output = "[";
-		output += "Points : " + getPoints() + ", ";
+		output += "Letters: \"" + mLetters + "\" ";
+		output += "Pts: " + getPoints() + ", ";
+		output += "Pos: " + mRow + "," + mCol + ", ";
+		output += "Hor:" + mHorizontal + ", ";
 		output += "Words: " + mWords.toString() + "]";
 		
 		return output;
@@ -202,4 +225,36 @@ public class Move implements Comparable<Move> {
 			return 0;
 		}
 	}
+	
+	@Override
+	public int hashCode() {
+        return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+            // if deriving: appendSuper(super.hashCode()).
+            append(mPoints).
+            append(mLetters).
+            append(mRow).
+            append(mCol).
+            toHashCode();
+    }
+	
+	@Override
+	public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        Move rhs = (Move) obj;
+        return new EqualsBuilder().
+            // if deriving: appendSuper(super.equals(obj)).
+        		append(mPoints, rhs.getPoints()).
+                append(mLetters, rhs.getLetters()).
+                append(mRow, rhs.getRow()).
+                append(mCol, rhs.getCol()).
+                isEquals();
+    }
+
+
 }

@@ -25,7 +25,11 @@ public class Word implements Comparable<Word> {
 			} else {
 				curRow += i;
 			}
-			mFields[i] = new Field(board.getField(curRow,curCol));
+			try {
+				mFields[i] = new Field(board.getField(curRow,curCol));
+			} catch(NullPointerException NPE) {
+				System.out.println("Caught NPE. Field: " + curRow + ", " + curCol);
+			}
 			if(board.getField(curRow,curCol).getTile() == null) {
 					mFields[i].setTile(mLetters.charAt(i));
 			} 
@@ -37,9 +41,20 @@ public class Word implements Comparable<Word> {
 			return mPoints;
 		}
 		
-		
 		mPoints = calcPoints();
 		return mPoints;
+	}
+	
+	public String getLetters() {
+		return mLetters;
+	}
+	
+	public int getRow() {
+		return mRow;
+	}
+	
+	public int getCol() {
+		return mCol;
 	}
 	
 	public boolean isValid(Database db) {

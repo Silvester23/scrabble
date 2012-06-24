@@ -2,64 +2,66 @@ package de.mainaim.scrabblesolver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 
 
 
 public class Solver {
+	static Database mDb;
+	static Board mBoard;
 	
 	public static void main(String[] args) {
+		
 		long starttime;
 
-		String letters = "ybxrune";
+		String letters = "wzggmtu";
 		
 		starttime = System.nanoTime();
-		Database db = new Database();
+		mDb = new Database();
+		mBoard = new Board();
 		System.out.println("Db init: " + Long.toString((System.nanoTime() - starttime)/1000000));
-		Board board = new Board();
+		
+		mBoard.setWord(0,7,"jet", false);
+		mBoard.setWord(1,6,"jet", false);
+		mBoard.setWord(1,4,"lacks", false);
+		mBoard.setWord(1,11,"kid", false);
+		mBoard.setWord(3,10,"im", false);
+		mBoard.setWord(5,6,"böser", false);
+		mBoard.setWord(9,4,"vase", false);
+		mBoard.setWord(11,1,"qis", false);
+		mBoard.setWord(4,9,"hüfen", false);
+		mBoard.setWord(7,10,"noten", false);
+		mBoard.setWord(11,6,"er", false);
+		
+		mBoard.setWord(3,2,"nacht", true);
+		mBoard.setWord(5,4,"sub", true);
+		mBoard.setWord(6,6,"öl", true);
+		mBoard.setWord(7,6,"suren", true);
+		mBoard.setWord(8,6,"es", true);
+		mBoard.setWord(9,4,"vor", true);
+		mBoard.setWord(11,1,"questen", true);
+		mBoard.setWord(12,0,"zimte", true);
 		
 		
+
+		starttime = System.nanoTime();
+		findMoves(letters);
+		System.out.println("Finding Moves: " + ((System.nanoTime() - starttime)/1000000));
 		
+		System.out.println(mBoard);
 		
-		
-		board.setTile(5,5,'k');
-		board.setTile(6,5,'e');
-		board.setTile(7,5,'i');
-		board.setTile(8,5,'n');
 
 		
-		/*
-		board.setTile(8,8,'d');
-		
-		board.setTile(8,9,'s');
-		board.setTile(9,9,'o');
-		*/
-		
-		
-		//Move move = new Move("s",10,5,true,board);
-		//[{Word: n, Row: 8, Col: 7, Dir: Hor, Points : 1}, {Word: chefn, Row: 4, Col: 7, Dir: Ver, Points : 12}]
-		
-		starttime = System.nanoTime();
-		findMoves(db, board, letters);
-		System.out.println("Finding Moves: " + Long.toString((System.nanoTime() - starttime)/100000));
-		
-		System.out.println(board.toString());
-		
-		ArrayList<Move> test = new ArrayList<Move>();
-		test.add(null);
-		test.remove(null);
-		System.out.println(test);
 		
 	}
 	
 	
-	public static void findMoves(Database db, Board board, String letters) {
-		ArrayList<Move> moves = new ArrayList<Move>();
+	public static void findMoves(String letters) {
+		Set<Move> moves = new HashSet<Move>();
 		
 		// Behaviour for empty Board
-		if(board.isEmpty()) {
+		if(mBoard.isEmpty()) {
 			/*
 			Set<String> matches = db.findWords(letters);
 			System.out.println(matches);
@@ -79,105 +81,92 @@ public class Solver {
 		
 		// Behaviour for non-empty Board
 		else {
-			Set<int[]> indices = new HashSet<int[]>();
-			for(int row = 0; row < board.getSize(); row++) {
-				for(int col = 0; col < board.getSize(); col++) {
-					if(board.getField(row,col).getTile() == null) {
-						if(board.getField(row,col-1) != null && board.getField(row,col-1).getTile() != null) {
-							indices.add(new int[]{row,col});
-						}
-						
-						if(board.getField(row,col+1) != null && board.getField(row,col+1).getTile() != null) {
-							indices.add(new int[]{row,col});
-						}
-						
-						if(board.getField(row-1,col) != null && board.getField(row-1,col).getTile() != null) {
-							indices.add(new int[]{row,col});
-						}
-						
-						if(board.getField(row+1,col) != null && board.getField(row+1,col).getTile() != null) {
-							indices.add(new int[]{row,col});
-						}
+			// Find all potential positions
+			int[][][] minLengths = mBoard.getMinWordLengths();
+			for(int row = 0; row < mBoard.getSize(); row++) {
+				for(int col = 0; col < mBoard.getSize(); col++) {
+					if(minLengths[row][col][0] > 0) {
+						moves.addAll(getMovesAtPosition(letters,row,col,true,minLengths[row][col][0]));
+					}
+					if(minLengths[row][col][1] > 0) {
+						moves.addAll(getMovesAtPosition(letters, row,col,false,minLengths[row][col][1]));
 					}
 				}
 			}
-			
-			ArrayList<Move> movesAtPosition = new ArrayList<Move>();
-			Iterator<int[]> ite = indices.iterator();
-			while(ite.hasNext()) {
-				int[] curPosition = ite.next();
-				movesAtPosition = getMovesAtPosition(letters,curPosition, board, db);
-				moves.addAll(movesAtPosition);
-			}
-			Collections.sort(moves);
-			System.out.println(moves);
 		}
-		
-		
+		ArrayList<Move> movesList = new ArrayList<Move>(moves);
+		Collections.sort(movesList);
+		System.out.println(movesList);
 	}
 	
+	public static Set<Move> getMovesAtPosition(String letters, int row, int col, boolean horizontal, int minLength) {
+		Set<Move> moves = new HashSet<Move>();
+		
+		moves.addAll(getMovesAtPosition(letters,"",row,col,horizontal,minLength));
 
-	public static ArrayList<Move> getMovesAtPosition(String letters, int[] position, Board board, Database db) {
-		int row = position[0];
-		int col = position[1];
-		ArrayList<Move> moves = new ArrayList<Move>();
-		
-		moves.addAll(getMovesAtPosition(letters, "", position, true, false, board, db));
-		moves.addAll(getMovesAtPosition(letters, "", position, false, false, board, db));
-		
-		Collections.sort(moves);
 		return moves;
 	}
 	
-	public static ArrayList<Move> getMovesAtPosition(String letters, String substring, int[] position, boolean horizontal, boolean reverse, Board board, Database db) {
-		int row = position[0];
-		int col = position[1];
-		ArrayList<Move> moves = new ArrayList<Move>();
+	public static Set<Move> getMovesAtPosition(String letters, String prefix, int row, int col, boolean horizontal, int minLength) {
+		Set<Move> moves = new HashSet<Move>();
 		int n = letters.length();
-		
+		String curWord;
+		String suffix;
+		String contdQuery;
+		String finalQuery;
 		if(horizontal) {
-			for(int i = 0; i < n; i++) {
-				String newLetters = substring + letters.charAt(i);
+			suffix = mBoard.getSuffix(row,col+minLength,horizontal);
+			if(col + prefix.length() >= mBoard.getSize()) {
+				return moves;
+			}
+		} else {
+			suffix = mBoard.getSuffix(row+minLength,col,horizontal);
+			if(row + prefix.length() >= mBoard.getSize()) {
+				return moves;
+			}
+		}
+		
+		
+		for(int i = 0; i < n; i++) {
+			curWord = prefix + letters.charAt(i);
+			
+			if(curWord.length() < minLength) {
+				contdQuery = curWord + "*";
+				if(suffix.length() > 0) {
+					contdQuery += suffix + "*";
+				}
+				if(mDb.doQuery(contdQuery)) {
+					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), curWord, row, col, horizontal, minLength));
+				} 				
+			} else {
+				Word fullWord;
+				if(curWord.length() == minLength) {
+					fullWord = mBoard.getFullWord(curWord + suffix,row,col,horizontal);
+					curWord = fullWord.getLetters();
+				} else {
+					fullWord = mBoard.getFullWord(curWord,row,col,horizontal);
+					curWord = fullWord.getLetters();
+				}
+				finalQuery = curWord;
+				contdQuery = finalQuery + "*";
 				
-				
-				if(db.doQuery(newLetters + "*")) {
-					Move move = new Move(newLetters,row,col,horizontal,board);
+				if(mDb.doQuery(finalQuery)) {
 					
-					if(move.isValid(db)) {
+					Move move = new Move(curWord,fullWord.getRow(),fullWord.getCol(),horizontal, mBoard);
+					if(move.isValid(mDb)) {
 						moves.add(move);
 					}
-					newLetters = addSpacesToSubstring(newLetters, position, horizontal, reverse, board);
-									
-					
-					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), newLetters, position, horizontal, reverse, board, db));
-				}				
+				}
+				
+				if(mDb.doQuery(contdQuery)) {
+					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), curWord, row, col, horizontal, minLength));
+				}
 				
 			}
 		}
-		
 		return moves;
 	}
-	
-	
-	public static String addSpacesToSubstring(String substring, int[] position, boolean horizontal, boolean reverse, Board board) {
-		int row = position[0];
-		int col = position[1];
-		int n = substring.length();
-		if(horizontal) {
-			if(col < board.getSize() -1) {
-				// Add spaces for tiles after substring
-				Field nextHor;
-				int i = 0;
-				while((nextHor = board.getField(row,col + n +i)) != null) {
-					Tile nextTile = nextHor.getTile();
-					if(nextTile == null)
-						break;
-					i++;
-					substring += " "; 
-				}
-			}
-		}
-		
-		return substring;
-	}
 }
+	
+
+	
