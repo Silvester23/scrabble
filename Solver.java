@@ -69,14 +69,16 @@ public class Solver {
 		
 		// Behaviour for non-empty Board
 		else {
-			// Find all potential positions
+			// Find minimum lengths for each board position
 			int[][][] minLengths = mBoard.getMinWordLengths();
 			for(int row = 0; row < mBoard.getSize(); row++) {
 				for(int col = 0; col < mBoard.getSize(); col++) {
 					if(minLengths[row][col][0] > 0) {
+						// add horizontal words
 						moves.addAll(getMovesAtPosition(letters,row,col,true,minLengths[row][col][0]));
 					}
 					if(minLengths[row][col][1] > 0) {
+						// add vertical words
 						moves.addAll(getMovesAtPosition(letters, row,col,false,minLengths[row][col][1]));
 					}
 				}
@@ -124,6 +126,7 @@ public class Solver {
 					contdQuery += suffix + "*";
 				}
 				if(mDb.doQuery(contdQuery)) {
+					// recursively increase word length
 					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), curWord, row, col, horizontal, minLength));
 				} 				
 			} else {
@@ -142,11 +145,13 @@ public class Solver {
 					
 					Move move = new Move(curWord,fullWord.getRow(),fullWord.getCol(),horizontal, mBoard);
 					if(move.isValid(mDb)) {
+						// add move if valid
 						moves.add(move);
 					}
 				}
 				
 				if(mDb.doQuery(contdQuery)) {
+					// recursively increase word length
 					moves.addAll(getMovesAtPosition(letters.substring(0,i) + letters.substring(i+1,n), curWord, row, col, horizontal, minLength));
 				}
 				
